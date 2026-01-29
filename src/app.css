@@ -1,7 +1,7 @@
 /* src/app.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
 
 /* Smooth scrolling for the whole app */
 html {
@@ -22,4 +22,9 @@ html {
 }
 ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8; 
+}
+
+/* Input Focus Rings (Consistency) */
+input:focus, select:focus, textarea:focus {
+    @apply outline-none ring-2 ring-indigo-500 border-transparent;
 }
