@@ -1,78 +1,87 @@
 <script>
-    import '../app.css'; // Make sure Tailwind is setup
+    import '../app.css';
     import { page } from '$app/stores';
     import { Toaster } from 'svelte-french-toast';
     import { settings, userProfile } from '$lib/stores';
 
-    let sidebarCollapsed = false;
+    let mobileMenuOpen = false;
 
-    // Helper to check active route
-    $: isActive = (path) => $page.url.pathname === path ? 'bg-white/10 border-l-4 border-blue-400' : 'hover:bg-white/5';
+    // Close menu when route changes
+    $: if($page.url.pathname) mobileMenuOpen = false;
 
-    function getInitials(name) {
-        const names = name.split(' ');
-        let initials = names[0][0];
-        if(names.length > 1) initials += names[names.length - 1][0];
-        return initials.toUpperCase();
-    }
+    $: isActive = (path) => $page.url.pathname === path 
+        ? 'bg-blue-600 text-white shadow-md' 
+        : 'text-indigo-100 hover:bg-white/10';
 </script>
 
 <Toaster />
 
-<div class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
-    <aside class="transition-all duration-300 bg-gradient-to-b from-indigo-900 to-indigo-800 text-white flex flex-col shadow-xl z-20 {sidebarCollapsed ? 'w-20' : 'w-64'}">
-        <div class="p-6 border-b border-indigo-800 flex justify-between items-center">
-            {#if !sidebarCollapsed}
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight">{$settings.appName}</h1>
-                    <p class="text-xs text-indigo-200 opacity-80">AR System</p>
-                </div>
-            {/if}
-            <button on:click={() => sidebarCollapsed = !sidebarCollapsed} class="p-1 rounded hover:bg-white/10 ml-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+<div class="flex h-screen bg-gray-50 overflow-hidden">
+    
+    {#if mobileMenuOpen}
+        <div class="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm" 
+             on:click={() => mobileMenuOpen = false}></div>
+    {/if}
+
+    <aside class="
+        fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-slate-900 to-slate-800 
+        transform transition-transform duration-300 ease-in-out shadow-2xl
+        lg:translate-x-0 lg:static lg:shadow-none
+        {mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+    ">
+        <div class="h-16 flex items-center justify-between px-6 border-b border-white/10">
+            <h1 class="text-xl font-bold text-white tracking-tight">{$settings.appName}</h1>
+            <button class="lg:hidden text-white" on:click={() => mobileMenuOpen = false}>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
         </div>
 
-        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <a href="/" class="block px-4 py-3 rounded-lg transition flex items-center gap-3 {isActive('/')}">
-                <span>📊</span> {#if !sidebarCollapsed}<span>Dashboard</span>{/if}
+        <nav class="p-4 space-y-2 overflow-y-auto">
+            <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium {isActive('/')}">
+                <span>📊</span> Dashboard
             </a>
-            <a href="/tenants" class="block px-4 py-3 rounded-lg transition flex items-center gap-3 {isActive('/tenants')}">
-                <span>👥</span> {#if !sidebarCollapsed}<span>Tenants</span>{/if}
+            <a href="/tenants" class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium {isActive('/tenants')}">
+                <span>👥</span> Tenants
             </a>
-            <a href="/billing" class="block px-4 py-3 rounded-lg transition flex items-center gap-3 {isActive('/billing')}">
-                <span>🧾</span> {#if !sidebarCollapsed}<span>Billing</span>{/if}
+            <a href="/billing" class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium {isActive('/billing')}">
+                <span>🧾</span> Billing
             </a>
-            <a href="/payments" class="block px-4 py-3 rounded-lg transition flex items-center gap-3 {isActive('/payments')}">
-                <span>💰</span> {#if !sidebarCollapsed}<span>Payments</span>{/if}
+            <a href="/payments" class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium {isActive('/payments')}">
+                <span>💰</span> Payments
             </a>
-            <a href="/expenses" class="block px-4 py-3 rounded-lg transition flex items-center gap-3 {isActive('/expenses')}">
-                <span>💸</span> {#if !sidebarCollapsed}<span>Expenses</span>{/if}
+            <a href="/expenses" class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium {isActive('/expenses')}">
+                <span>💸</span> Expenses
             </a>
-            <a href="/settings" class="block px-4 py-3 rounded-lg transition flex items-center gap-3 {isActive('/settings')}">
-                <span>⚙️</span> {#if !sidebarCollapsed}<span>Settings</span>{/if}
+            <a href="/settings" class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium {isActive('/settings')}">
+                <span>⚙️</span> Settings
             </a>
         </nav>
-    </aside>
 
-    <main class="flex-1 overflow-auto bg-slate-50 relative flex flex-col">
-        <header class="bg-white shadow-sm sticky top-0 z-10 px-8 py-4 flex justify-between items-center border-b border-gray-100 h-18">
-            <h2 class="text-xl font-bold text-gray-800 capitalize">{$page.url.pathname === '/' ? 'Dashboard' : $page.url.pathname.replace('/', '')}</h2>
-            <div class="flex items-center space-x-4">
-                <div class="text-sm text-right hidden sm:block">
-                    <p class="font-bold text-gray-900">{$userProfile.username}</p>
-                    <p class="text-xs text-blue-600 font-medium">{$userProfile.role}</p>
+        <div class="p-4 border-t border-white/10 mt-auto">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                    {$userProfile.username.charAt(0)}
                 </div>
-                <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
-                    {getInitials($userProfile.username)}
+                <div>
+                    <p class="text-white text-sm font-semibold">{$userProfile.username}</p>
+                    <p class="text-slate-400 text-xs">{$userProfile.role}</p>
                 </div>
             </div>
-        </header>
+        </div>
+    </aside>
 
-        <div class="p-8 pb-20 max-w-7xl mx-auto w-full">
-            <slot />
+    <main class="flex-1 flex flex-col w-full h-full overflow-hidden">
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:hidden shrink-0">
+            <button on:click={() => mobileMenuOpen = true} class="p-2 -ml-2 text-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            </button>
+            <span class="font-bold text-gray-800">{$settings.appName}</span>
+            <div class="w-8"></div> </header>
+
+        <div class="flex-1 overflow-auto p-4 lg:p-8">
+            <div class="max-w-6xl mx-auto">
+                <slot />
+            </div>
         </div>
     </main>
 </div>
