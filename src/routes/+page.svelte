@@ -1,47 +1,31 @@
 <script>
     import { tenantStats, bills, expenses } from '$lib/stores';
     import { formatMoney } from '$lib/utils';
-    import { fade } from 'svelte/transition';
 
-    // Reactive calculations (updates automatically)
-    $: totalBilled = $bills.reduce((sum, b) => sum + b.total, 0);
-    $: totalExpenses = $expenses.reduce((sum, e) => sum + e.amount, 0);
-    $: totalCollected = $tenantStats.reduce((sum, t) => sum + t.paid, 0);
-    $: totalOutstanding = $tenantStats.reduce((sum, t) => t.balance > 0 ? sum + t.balance : sum, 0);
+    $: totalBilled = $bills.reduce((s, b) => s + b.total, 0);
+    $: totalExpenses = $expenses.reduce((s, e) => s + e.amount, 0);
+    $: totalPaid = $tenantStats.reduce((s, t) => s + t.paid, 0);
+    $: totalOutstanding = $tenantStats.reduce((s, t) => t.balance > 0 ? s + t.balance : s, 0);
 </script>
 
-<div in:fade class="space-y-6">
-    
+<div class="space-y-6">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-indigo-500">
-            <div class="text-xs font-bold uppercase text-gray-400">Total Billed</div>
-            <div class="text-xl font-black text-gray-800">{formatMoney(totalBilled)}</div>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-red-500">
-            <div class="text-xs font-bold uppercase text-gray-400">Outstanding</div>
-            <div class="text-xl font-black text-red-600">{formatMoney(totalOutstanding)}</div>
-        </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-emerald-500">
-            <div class="text-xs font-bold uppercase text-gray-400">Total Receipts</div>
-            <div class="text-xl font-black text-emerald-600">{formatMoney(totalCollected)}</div>
-        </div>
-         <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-orange-500">
-            <div class="text-xs font-bold uppercase text-gray-400">Total Expenses</div>
-            <div class="text-xl font-black text-orange-600">{formatMoney(totalExpenses)}</div>
-        </div>
+        <KpiCard label="Total Billed" value={totalBilled} color="blue" />
+        <KpiCard label="Outstanding" value={totalOutstanding} color="red" />
+        <KpiCard label="Receipts" value={totalPaid} color="emerald" />
+        <KpiCard label="Expenses" value={totalExpenses} color="orange" />
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+        <div class="p-4 border-b border-gray-100 bg-gray-50/50">
             <h3 class="font-bold text-gray-800">Financial Overview</h3>
         </div>
 
         <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-sm text-left">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                <thead class="text-xs uppercase bg-gray-50 text-gray-500">
                     <tr>
                         <th class="px-6 py-3">Tenant</th>
-                        <th class="px-6 py-3">Plot</th>
                         <th class="px-6 py-3 text-right">Billed</th>
                         <th class="px-6 py-3 text-right">Paid</th>
                         <th class="px-6 py-3 text-right">Balance</th>
@@ -49,61 +33,36 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {#each $tenantStats as t}
-                        {#if t.status !== 'deleted'}
-                        <tr class="border-b hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 font-bold">{t.name}</td>
-                            <td class="px-6 py-4">{t.plotNumber}</td>
-                            <td class="px-6 py-4 text-right text-gray-600">{formatMoney(t.billed)}</td>
-                            <td class="px-6 py-4 text-right text-gray-600">{formatMoney(t.paid)}</td>
-                            <td class="px-6 py-4 text-right font-bold" class:text-red-600={t.balance > 0} class:text-green-600={t.balance < 0}>
-                                {formatMoney(t.balance)}
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <StatusBadge balance={t.balance} />
-                            </td>
+                    {#each $tenantStats.filter(t => t.status !== 'deleted') as t}
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-bold">{t.name} <span class="text-gray-400 font-normal ml-1">#{t.plotNumber}</span></td>
+                            <td class="px-6 py-4 text-right">{formatMoney(t.billed)}</td>
+                            <td class="px-6 py-4 text-right">{formatMoney(t.paid)}</td>
+                            <td class="px-6 py-4 text-right font-bold" class:text-red-600={t.balance > 0.01} class:text-green-600={t.balance < -0.01}>{formatMoney(t.balance)}</td>
+                            <td class="px-6 py-4 text-center"><StatusBadge bal={t.balance} /></td>
                         </tr>
-                        {/if}
                     {/each}
                 </tbody>
             </table>
         </div>
 
-        <div class="md:hidden">
-            {#each $tenantStats as t}
-                {#if t.status !== 'deleted'}
-                <div class="p-4 border-b border-gray-100 flex flex-col gap-3">
+        <div class="md:hidden divide-y divide-gray-100">
+            {#each $tenantStats.filter(t => t.status !== 'deleted') as t}
+                <div class="p-4 flex flex-col gap-3">
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="font-bold text-gray-900">{t.name}</div>
-                            <div class="text-xs text-gray-500 font-medium">Plot: {t.plotNumber}</div>
+                            <div class="text-xs text-gray-500">Plot: {t.plotNumber}</div>
                         </div>
-                        <StatusBadge balance={t.balance} />
+                        <StatusBadge bal={t.balance} />
                     </div>
-
-                    <div class="grid grid-cols-3 gap-2 text-sm bg-gray-50 p-2 rounded-lg">
-                        <div class="text-center">
-                            <div class="text-[10px] uppercase text-gray-400 font-bold">Billed</div>
-                            <div class="text-gray-600">{formatMoney(t.billed)}</div>
-                        </div>
-                        <div class="text-center border-l border-gray-200">
-                            <div class="text-[10px] uppercase text-gray-400 font-bold">Paid</div>
-                            <div class="text-gray-600">{formatMoney(t.paid)}</div>
-                        </div>
-                        <div class="text-center border-l border-gray-200">
-                            <div class="text-[10px] uppercase text-gray-400 font-bold">Balance</div>
-                            <div class="font-bold" class:text-red-600={t.balance > 0} class:text-green-600={t.balance < 0}>
-                                {formatMoney(t.balance)}
-                            </div>
-                        </div>
+                    <div class="grid grid-cols-3 gap-2 text-xs bg-slate-50 p-2 rounded">
+                        <div class="text-center"><span class="block text-gray-400">Billed</span>{formatMoney(t.billed)}</div>
+                        <div class="text-center border-l"><span class="block text-gray-400">Paid</span>{formatMoney(t.paid)}</div>
+                        <div class="text-center border-l font-bold" class:text-red-600={t.balance>0}>{formatMoney(t.balance)}</div>
                     </div>
                 </div>
-                {/if}
             {/each}
-            
-            {#if $tenantStats.length === 0}
-                <div class="p-8 text-center text-gray-500 italic">No records found.</div>
-            {/if}
         </div>
     </div>
 </div>
@@ -112,12 +71,16 @@
     import { create_ssr_component } from 'svelte/internal';
 </script>
 
-{#snippet StatusBadge({ balance })}
-    {#if balance > 0.01}
-        <span class="bg-red-100 text-red-800 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide border border-red-200">Due</span>
-    {:else if balance < -0.01}
-        <span class="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide border border-green-200">Credit</span>
-    {:else}
-        <span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide border border-gray-200">Settled</span>
+{#snippet KpiCard({label, value, color})}
+    <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-{color}-500">
+        <div class="text-xs font-bold uppercase text-gray-400">{label}</div>
+        <div class="text-xl font-black text-gray-800">{formatMoney(value)}</div>
+    </div>
+{/snippet}
+
+{#snippet StatusBadge({bal})}
+    {#if bal > 0.01} <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded font-bold">DUE</span>
+    {:else if bal < -0.01} <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-bold">CREDIT</span>
+    {:else} <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded font-bold">OK</span>
     {/if}
 {/snippet}
