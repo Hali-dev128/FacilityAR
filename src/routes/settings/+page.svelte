@@ -55,7 +55,7 @@
         <form on:submit|preventDefault={saveSystem} class="space-y-4">
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-1">Application Name</label>
-                <input bind:value={appName} class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+                <input bind:value={appName} class="w-full border p-2 rounded-lg outline-none" />
             </div>
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-1">Currency Symbol</label>
@@ -76,11 +76,11 @@
         <form on:submit|preventDefault={saveProfile} class="space-y-4">
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-1">Display Name</label>
-                <input bind:value={username} class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+                <input bind:value={username} class="w-full border p-2 rounded-lg outline-none" />
             </div>
             <div>
                 <label class="block text-sm font-bold text-gray-700 mb-1">Job Title / Role</label>
-                <input bind:value={role} class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+                <input bind:value={role} class="w-full border p-2 rounded-lg outline-none" />
             </div>
             <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg w-full transition">
                 Update Profile
